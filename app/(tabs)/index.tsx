@@ -1,9 +1,7 @@
-import { Image } from 'expo-image';
-import { FlatList, StyleSheet } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 
+import globalStyles from '@/assets/styles';
 import Compass from '@/components/Compass';
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -120,57 +118,53 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={<Image source={require('@/assets/images/partial-react-logo.png')} style={styles.reactLogo} />}
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        {location && heading && stations?.length > 0 && (
-          <>
-            <Compass heading={heading} location={location} stations={stations} />
-            <FlatList
-              data={stations}
-              renderItem={({ item }) => (
-                <>
-                  <ThemedText>{item.attributes.name}</ThemedText>
-                  <ThemedText type="defaultSemiBold">
-                    {getDistanceBetweenCoordinatesInMiles(
-                      location.coords.latitude,
-                      location.coords.longitude,
-                      item.attributes.latitude,
-                      item.attributes.longitude
-                    ).toPrecision(2)}{' '}
-                    miles
-                  </ThemedText>
-                </>
-              )}
-            />
-          </>
-        )}
-      </ThemedView>
-    </ParallaxScrollView>
+    <ThemedView style={{ flex: 1 }} isSafeArea>
+      <ScrollView>
+        <ThemedView style={styles.content}>
+          {location && heading && stations?.length > 0 && (
+            <>
+              <Compass heading={heading} location={location} stations={stations} />
+              <ThemedText type="defaultSemiBold">Closest Stations</ThemedText>
+              <ThemedView style={styles.stationsContainer}>
+                {stations.map((station, index) => (
+                  <View key={station.id} style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
+                    <View style={globalStyles.marker}>
+                      <ThemedText
+                        type="small"
+                        style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}
+                      >
+                        {index + 1}
+                      </ThemedText>
+                    </View>
+                    <ThemedText style={{ flexShrink: 1 }}>{station.attributes.name}</ThemedText>
+                    <ThemedText style={{ marginLeft: 'auto' }} type="small">
+                      {getDistanceBetweenCoordinatesInMiles(
+                        location.coords.latitude,
+                        location.coords.longitude,
+                        station.attributes.latitude,
+                        station.attributes.longitude
+                      ).toPrecision(2)}{' '}
+                      miles
+                    </ThemedText>
+                  </View>
+                ))}
+              </ThemedView>
+            </>
+          )}
+        </ThemedView>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  content: {
+    flex: 1,
+    padding: 32,
+    gap: 16,
+    overflow: 'hidden',
   },
-  stepContainer: {
+  stationsContainer: {
     gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
 });

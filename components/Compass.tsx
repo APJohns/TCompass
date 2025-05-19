@@ -1,6 +1,7 @@
 import { Station } from '@/app/(tabs)';
+import globalStyles from '@/assets/styles';
 import { LocationObject } from 'expo-location';
-import { useColorScheme, View } from 'react-native';
+import { Platform, useColorScheme, View } from 'react-native';
 import { ThemedText } from './ThemedText';
 
 interface Props {
@@ -54,7 +55,7 @@ export default function Compass({ heading, location, stations }: Props) {
           key={station.id}
           style={{
             position: 'absolute',
-            inset: 64 - index * 16,
+            inset: 116 - index * 28,
             alignItems: 'center',
             transform: [
               {
@@ -68,17 +69,10 @@ export default function Compass({ heading, location, stations }: Props) {
             ],
           }}
         >
-          <View
-            style={{
-              padding: 4,
-              borderRadius: '50%',
-              backgroundColor: 'orange',
-              aspectRatio: '1/1',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <ThemedText>{index + 1}</ThemedText>
+          <View style={globalStyles.marker}>
+            <ThemedText type="small" style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}>
+              {index + 1}
+            </ThemedText>
           </View>
         </View>
       ))}
