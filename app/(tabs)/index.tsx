@@ -66,26 +66,33 @@ export default function HomeScreen() {
     };
   };
 
-  const fetchStationsFromMBTA = async (latitude: number, longitude: number) => {
+  const fetchStationsFromMBTA = useCallback(async (latitude: number, longitude: number): Promise<Station[]> => {
     console.log('fetching stations');
-    // TODO: Reduce radius to 1 mile (0.02)
-    const res = await fetch(
-      `https://api-v3.mbta.com/stops?filter[location_type]=2&filter[latitude]=${latitude}&filter[longitude]=${longitude}&filter[radius]=0.1&sort=distance&page[limit]=5`
-    );
-    return await res.json();
-  };
+    const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=2`);
 
-  const refreshStationsData = useCallback(async (latitude: number, longitude: number) => {
-    const data = await fetchStationsFromMBTA(latitude, longitude);
-    AsyncStorage.setItem(
-      'closestStations',
-      JSON.stringify({
-        data: data.data,
-        timestamp: new Date().getTime(),
-      })
+    const allStations = (await res.json()).data as Station[];
+    allStations.sort(
+      (a, b) =>
+        getDistanceBetweenCoordinates(latitude, longitude, a.attributes.latitude, a.attributes.longitude) -
+        getDistanceBetweenCoordinates(latitude, longitude, b.attributes.latitude, b.attributes.longitude)
     );
-    setStations(data.data);
+    return allStations.slice(0, 5);
   }, []);
+
+  const refreshStationsData = useCallback(
+    async (latitude: number, longitude: number) => {
+      const data = await fetchStationsFromMBTA(latitude, longitude);
+      AsyncStorage.setItem(
+        'closestStations',
+        JSON.stringify({
+          data,
+          timestamp: new Date().getTime(),
+        })
+      );
+      setStations(data);
+    },
+    [fetchStationsFromMBTA]
+  );
 
   useEffect(() => {
     (async () => {
