@@ -53,14 +53,7 @@ export default function HomeScreen() {
   const fetchStationsFromMBTA = useCallback(async (latitude: number, longitude: number): Promise<Station[]> => {
     console.log('fetching stations');
     const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=2`);
-
     return (await res.json()).data as Station[];
-    /* allStations.sort(
-      (a, b) =>
-        getDistanceBetweenCoordinates(latitude, longitude, a.attributes.latitude, a.attributes.longitude) -
-        getDistanceBetweenCoordinates(latitude, longitude, b.attributes.latitude, b.attributes.longitude)
-    );
-    return allStations.slice(0, 5); */
   }, []);
 
   const refreshStationsData = useCallback(
