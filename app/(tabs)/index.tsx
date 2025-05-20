@@ -1,9 +1,10 @@
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
-import globalStyles from '@/assets/styles';
 import Compass from '@/components/Compass';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import globalStyles from '@/shared/styles';
+import { getDistanceBetweenCoordinates, getDistanceBetweenCoordinatesInMiles } from '@/shared/utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useState } from 'react';
@@ -25,22 +26,7 @@ export default function HomeScreen() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [stations, setStations] = useState<Station[]>([]);
-
-  const getDistanceBetweenCoordinates = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
-  };
-
-  const getDistanceBetweenCoordinatesInMiles = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const distanceInKm = getDistanceBetweenCoordinates(lat1, lon1, lat2, lon2);
-    return distanceInKm * 0.621371; // Convert km to miles
-  };
+  const [closestStations, setClosestStations] = useState<Station[]>([]);
 
   const getLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -68,13 +54,13 @@ export default function HomeScreen() {
     console.log('fetching stations');
     const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=2`);
 
-    const allStations = (await res.json()).data as Station[];
-    allStations.sort(
+    return (await res.json()).data as Station[];
+    /* allStations.sort(
       (a, b) =>
         getDistanceBetweenCoordinates(latitude, longitude, a.attributes.latitude, a.attributes.longitude) -
         getDistanceBetweenCoordinates(latitude, longitude, b.attributes.latitude, b.attributes.longitude)
     );
-    return allStations.slice(0, 5);
+    return allStations.slice(0, 5); */
   }, []);
 
   const refreshStationsData = useCallback(
@@ -114,6 +100,27 @@ export default function HomeScreen() {
   }, [location, refreshStationsData]);
 
   useEffect(() => {
+    if (location) {
+      const allStations = [...stations].sort(
+        (a, b) =>
+          getDistanceBetweenCoordinates(
+            location.coords.latitude,
+            location.coords.longitude,
+            a.attributes.latitude,
+            a.attributes.longitude
+          ) -
+          getDistanceBetweenCoordinates(
+            location.coords.latitude,
+            location.coords.longitude,
+            b.attributes.latitude,
+            b.attributes.longitude
+          )
+      );
+      setClosestStations(allStations.slice(0, 5));
+    }
+  }, [location, stations]);
+
+  useEffect(() => {
     getLocation();
   }, []);
 
@@ -123,16 +130,13 @@ export default function HomeScreen() {
         <ThemedView style={styles.content}>
           {location && heading && stations?.length > 0 && (
             <>
-              <Compass heading={heading} location={location} stations={stations} />
+              <Compass heading={heading} location={location} stations={closestStations} />
               <ThemedText type="defaultSemiBold">Closest Stations</ThemedText>
               <ThemedView style={styles.stationsContainer}>
-                {stations.map((station, index) => (
+                {closestStations.map((station, index) => (
                   <View key={station.id} style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
                     <View style={globalStyles.marker}>
-                      <ThemedText
-                        type="small"
-                        style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}
-                      >
+                      <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
                         {index + 1}
                       </ThemedText>
                     </View>

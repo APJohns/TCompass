@@ -1,7 +1,8 @@
 import { Station } from '@/app/(tabs)';
-import globalStyles from '@/assets/styles';
+import globalStyles from '@/shared/styles';
+import { getDistanceBetweenCoordinatesInMiles, getHeadingBetweenCoordinates } from '@/shared/utils';
 import { LocationObject } from 'expo-location';
-import { Platform, useColorScheme, View } from 'react-native';
+import { DimensionValue, StyleSheet, useColorScheme, View } from 'react-native';
 import { ThemedText } from './ThemedText';
 
 interface Props {
@@ -14,13 +15,15 @@ export default function Compass({ heading, location, stations }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
   const compassBorderColor = { light: '#A1CEDC', dark: '#1D3D47' };
 
-  const getHeadingBetweenCoordinates = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const dLon = lon2 - lon1;
-    const y = Math.sin(dLon) * Math.cos(lat2);
-    const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
-    const brng = Math.atan2(y, x);
-    const brngInDegrees = (brng * 180) / Math.PI; // Convert to degrees
-    return (brngInDegrees + 360) % 360; // Normalize to 0-360
+  const getRadius = (station: Station) => {
+    const edge = 0.094697; // 500 ft in miles
+    const distance = getDistanceBetweenCoordinatesInMiles(
+      location.coords.latitude,
+      location.coords.longitude,
+      station.attributes.latitude,
+      station.attributes.longitude
+    );
+    return ((distance < edge ? ((edge - distance) / edge) * 50 : 0) + '%') as DimensionValue;
   };
 
   return (
@@ -38,7 +41,18 @@ export default function Compass({ heading, location, stations }: Props) {
         transform: [{ rotate: `-${heading}deg` }],
       }}
     >
-      <ThemedText>N</ThemedText>
+      <View
+        style={{
+          position: 'absolute',
+          top: -28,
+          borderColor: 'transparent',
+          borderBottomColor: 'red',
+          borderWidth: 12,
+          borderLeftWidth: 8,
+          borderRightWidth: 8,
+        }}
+      />
+      <ThemedText style={styles.cardinalLetter}>N</ThemedText>
       <View
         style={{
           flexDirection: 'row',
@@ -46,16 +60,16 @@ export default function Compass({ heading, location, stations }: Props) {
           alignSelf: 'stretch',
         }}
       >
-        <ThemedText>W</ThemedText>
-        <ThemedText>E</ThemedText>
+        <ThemedText style={styles.cardinalLetter}>W</ThemedText>
+        <ThemedText style={styles.cardinalLetter}>E</ThemedText>
       </View>
-      <ThemedText>S</ThemedText>
+      <ThemedText style={styles.cardinalLetter}>S</ThemedText>
       {stations.map((station, index) => (
         <View
           key={station.id}
           style={{
             position: 'absolute',
-            inset: 116 - index * 28,
+            inset: getRadius(station),
             alignItems: 'center',
             transform: [
               {
@@ -70,7 +84,7 @@ export default function Compass({ heading, location, stations }: Props) {
           }}
         >
           <View style={globalStyles.marker}>
-            <ThemedText type="small" style={{ fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace' }}>
+            <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
               {index + 1}
             </ThemedText>
           </View>
@@ -79,3 +93,9 @@ export default function Compass({ heading, location, stations }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  cardinalLetter: {
+    fontSize: 24,
+  },
+});
