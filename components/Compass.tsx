@@ -10,9 +10,10 @@ interface Props {
   heading: number;
   location: LocationObject;
   stations: Station[];
+  markerNumbers: { [key: string]: number };
 }
 
-export default function Compass({ heading, location, stations }: Props) {
+export default function Compass({ heading, location, stations, markerNumbers }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
 
   const getRadius = (station: Station) => {
@@ -86,7 +87,7 @@ export default function Compass({ heading, location, stations }: Props) {
         >
           <View style={globalStyles.marker}>
             <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
-              {index + 1}
+              {markerNumbers[station.id]}
             </ThemedText>
           </View>
         </View>

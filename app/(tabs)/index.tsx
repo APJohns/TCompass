@@ -9,6 +9,8 @@ import * as Location from 'expo-location';
 import { useContext, useEffect, useState } from 'react';
 import { AllStationsContext, Station, TrackedStationsContext } from '../_layout';
 
+let markerIncrementor = 0;
+
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
@@ -16,6 +18,8 @@ export default function HomeScreen() {
 
   const [stations, setStations] = useState<Station[]>([]);
   const [closestStations, setClosestStations] = useState<Station[]>([]);
+  const [markerNumbers, setMarkerNumbers] = useState<{ [key: string]: number }>({});
+  // const markerNumbers = useRef(new Map<string, number>());
 
   const allStations = useContext(AllStationsContext);
   const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
@@ -61,6 +65,17 @@ export default function HomeScreen() {
       }
     })();
   }, [location, refreshStationsData]); */
+
+  useEffect(() => {
+    stations.forEach((station) => {
+      if (!markerNumbers[station.id]) {
+        setMarkerNumbers((prev) => ({
+          ...prev,
+          [station.id]: ++markerIncrementor,
+        }));
+      }
+    });
+  }, [markerNumbers, stations]);
 
   useEffect(() => {
     if (location && allStations.length > 0) {
@@ -118,13 +133,13 @@ export default function HomeScreen() {
         <ThemedView style={styles.content}>
           {location && heading && stations?.length > 0 && (
             <>
-              <Compass heading={heading} location={location} stations={stations} />
+              <Compass heading={heading} location={location} stations={stations} markerNumbers={markerNumbers} />
               <ThemedView style={styles.stationsContainer}>
                 {stations.map((station, index) => (
                   <View key={station.id} style={{ flexDirection: 'row', gap: 12, alignItems: 'baseline' }}>
                     <View style={globalStyles.marker}>
                       <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
-                        {index + 1}
+                        {markerNumbers[station.id]}
                       </ThemedText>
                     </View>
                     <ThemedText style={{ flexShrink: 1 }}>{station.attributes.name}</ThemedText>
