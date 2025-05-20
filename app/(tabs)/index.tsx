@@ -17,54 +17,23 @@ export default function HomeScreen() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [stations, setStations] = useState<Station[]>([]);
-  const [closestStations, setClosestStations] = useState<Station[]>([]);
   const [markerNumbers, setMarkerNumbers] = useState<{ [key: string]: number }>({});
   // const markerNumbers = useRef(new Map<string, number>());
 
   const allStations = useContext(AllStationsContext);
   const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
 
-  /* const fetchStationsFromMBTA = useCallback(async (latitude: number, longitude: number): Promise<Station[]> => {
-    console.log('fetching stations');
-    const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=2`);
-    return (await res.json()).data as Station[];
-  }, []);
-
-  const refreshStationsData = useCallback(
-    async (latitude: number, longitude: number) => {
-      const data = await fetchStationsFromMBTA(latitude, longitude);
-      AsyncStorage.setItem(
-        'closestStations',
-        JSON.stringify({
-          data,
-          timestamp: new Date().getTime(),
-        })
+  const getMarkerDistance = (station: Station) => {
+    if (location) {
+      const miles = getDistanceBetweenCoordinatesInMiles(
+        location.coords.latitude,
+        location.coords.longitude,
+        station.attributes.latitude,
+        station.attributes.longitude
       );
-      setStations(data);
-    },
-    [fetchStationsFromMBTA]
-  );
-
-  useEffect(() => {
-    (async () => {
-      if (location) {
-        const { latitude, longitude } = location.coords;
-        const storedStations = await AsyncStorage.getItem('closestStations');
-        if (storedStations) {
-          const parsedStations = JSON.parse(storedStations);
-          // Use cache if it is less than 1 day old
-          if (parsedStations.timestamp + 1000 * 60 * 60 * 24 > new Date().getTime()) {
-            console.log('Using cached stations');
-            setStations(parsedStations.data);
-          } else {
-            refreshStationsData(latitude, longitude);
-          }
-        } else {
-          refreshStationsData(latitude, longitude);
-        }
-      }
-    })();
-  }, [location, refreshStationsData]); */
+      return miles * 5280 <= 1000 ? (miles * 5280).toFixed(0) : miles.toPrecision(2);
+    }
+  };
 
   useEffect(() => {
     stations.forEach((station) => {
@@ -144,13 +113,7 @@ export default function HomeScreen() {
                     </View>
                     <ThemedText style={{ flexShrink: 1 }}>{station.attributes.name}</ThemedText>
                     <ThemedText style={{ marginLeft: 'auto' }} type="small">
-                      {getDistanceBetweenCoordinatesInMiles(
-                        location.coords.latitude,
-                        location.coords.longitude,
-                        station.attributes.latitude,
-                        station.attributes.longitude
-                      ).toPrecision(2)}{' '}
-                      miles
+                      {getMarkerDistance(station)} miles
                     </ThemedText>
                   </View>
                 ))}
