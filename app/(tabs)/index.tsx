@@ -5,20 +5,9 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinates, getDistanceBetweenCoordinatesInMiles } from '@/shared/utils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
-import { useCallback, useEffect, useState } from 'react';
-
-export interface Station {
-  id: string;
-  type: string;
-  attributes: {
-    name: string;
-    latitude: number;
-    longitude: number;
-    distance: number;
-  };
-}
+import { useContext, useEffect, useState } from 'react';
+import { AllStationsContext, Station, TrackedStationsContext } from '../_layout';
 
 export default function HomeScreen() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -28,29 +17,10 @@ export default function HomeScreen() {
   const [stations, setStations] = useState<Station[]>([]);
   const [closestStations, setClosestStations] = useState<Station[]>([]);
 
-  const getLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      setErrorMsg('Permission to access location was denied');
-      return;
-    }
+  const allStations = useContext(AllStationsContext);
+  const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
 
-    const locationSubscription = await Location.watchPositionAsync({}, (locationData) => {
-      setLocation(locationData);
-    });
-
-    const headingSubscription = await Location.watchHeadingAsync((headingData) => {
-      setHeading(headingData.trueHeading);
-    });
-
-    // Clean up on unmount
-    return () => {
-      headingSubscription.remove();
-      locationSubscription.remove();
-    };
-  };
-
-  const fetchStationsFromMBTA = useCallback(async (latitude: number, longitude: number): Promise<Station[]> => {
+  /* const fetchStationsFromMBTA = useCallback(async (latitude: number, longitude: number): Promise<Station[]> => {
     console.log('fetching stations');
     const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=2`);
     return (await res.json()).data as Station[];
@@ -90,31 +60,56 @@ export default function HomeScreen() {
         }
       }
     })();
-  }, [location, refreshStationsData]);
+  }, [location, refreshStationsData]); */
 
   useEffect(() => {
-    if (location) {
-      const allStations = [...stations].sort(
-        (a, b) =>
-          getDistanceBetweenCoordinates(
-            location.coords.latitude,
-            location.coords.longitude,
-            a.attributes.latitude,
-            a.attributes.longitude
-          ) -
-          getDistanceBetweenCoordinates(
-            location.coords.latitude,
-            location.coords.longitude,
-            b.attributes.latitude,
-            b.attributes.longitude
-          )
-      );
-      setClosestStations(allStations.slice(0, 5));
+    if (location && allStations.length > 0) {
+      if (trackedStations.length === 0) {
+        const sortedStations = [...allStations].sort(
+          (a, b) =>
+            getDistanceBetweenCoordinates(
+              location.coords.latitude,
+              location.coords.longitude,
+              a.attributes.latitude,
+              a.attributes.longitude
+            ) -
+            getDistanceBetweenCoordinates(
+              location.coords.latitude,
+              location.coords.longitude,
+              b.attributes.latitude,
+              b.attributes.longitude
+            )
+        );
+        const closest = sortedStations.slice(0, 5);
+        setStations(closest);
+      } else {
+        setStations(allStations.filter((station) => trackedStations.includes(station.id)));
+      }
     }
-  }, [location, stations]);
+  }, [allStations, location, trackedStations]);
 
   useEffect(() => {
-    getLocation();
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      const locationSubscription = await Location.watchPositionAsync({}, (locationData) => {
+        setLocation(locationData);
+      });
+
+      const headingSubscription = await Location.watchHeadingAsync((headingData) => {
+        setHeading(headingData.trueHeading);
+      });
+
+      // Clean up on unmount
+      return () => {
+        headingSubscription.remove();
+        locationSubscription.remove();
+      };
+    })();
   }, []);
 
   return (
@@ -123,9 +118,9 @@ export default function HomeScreen() {
         <ThemedView style={styles.content}>
           {location && heading && stations?.length > 0 && (
             <>
-              <Compass heading={heading} location={location} stations={closestStations} />
+              <Compass heading={heading} location={location} stations={stations} />
               <ThemedView style={styles.stationsContainer}>
-                {closestStations.map((station, index) => (
+                {stations.map((station, index) => (
                   <View key={station.id} style={{ flexDirection: 'row', gap: 12, alignItems: 'baseline' }}>
                     <View style={globalStyles.marker}>
                       <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>

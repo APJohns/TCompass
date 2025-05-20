@@ -35,7 +35,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="stations"
         options={{
           title: 'Stations',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="binoculars.fill" color={color} />,

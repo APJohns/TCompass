@@ -1,4 +1,4 @@
-import { Station } from '@/app/(tabs)';
+import { Station } from '@/app/_layout';
 import { Colors } from '@/constants/Colors';
 import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinatesInMiles, getHeadingBetweenCoordinates } from '@/shared/utils';
@@ -74,7 +74,7 @@ export default function Compass({ heading, location, stations }: Props) {
             alignItems: 'center',
             transform: [
               {
-                rotate: `-${getHeadingBetweenCoordinates(
+                rotate: `${getHeadingBetweenCoordinates(
                   location?.coords.latitude,
                   location?.coords.longitude,
                   station?.attributes.latitude,
