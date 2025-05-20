@@ -68,7 +68,7 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
           <ThemedText style={styles.cardinalLetter}>E</ThemedText>
         </View>
         <ThemedText style={styles.cardinalLetter}>S</ThemedText>
-        {stations.map((station, index) => (
+        {stations.map((station) => (
           <View
             key={station.id}
             style={{
