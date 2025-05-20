@@ -1,4 +1,5 @@
 import { Station } from '@/app/(tabs)';
+import { Colors } from '@/constants/Colors';
 import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinatesInMiles, getHeadingBetweenCoordinates } from '@/shared/utils';
 import { LocationObject } from 'expo-location';
@@ -13,7 +14,6 @@ interface Props {
 
 export default function Compass({ heading, location, stations }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
-  const compassBorderColor = { light: '#A1CEDC', dark: '#1D3D47' };
 
   const getRadius = (station: Station) => {
     const edge = 0.094697; // 500 ft in miles
@@ -34,7 +34,8 @@ export default function Compass({ heading, location, stations }: Props) {
         width: '100%',
         aspectRatio: '1/1',
         borderWidth: 2,
-        borderColor: compassBorderColor[colorScheme],
+        borderStyle: 'dotted',
+        borderColor: Colors[colorScheme].text,
         borderRadius: '50%',
         paddingHorizontal: 16,
         paddingVertical: 8,

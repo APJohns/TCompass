@@ -124,10 +124,9 @@ export default function HomeScreen() {
           {location && heading && stations?.length > 0 && (
             <>
               <Compass heading={heading} location={location} stations={closestStations} />
-              <ThemedText type="defaultSemiBold">Closest Stations</ThemedText>
               <ThemedView style={styles.stationsContainer}>
                 {closestStations.map((station, index) => (
-                  <View key={station.id} style={{ flexDirection: 'row', gap: 8, alignItems: 'baseline' }}>
+                  <View key={station.id} style={{ flexDirection: 'row', gap: 12, alignItems: 'baseline' }}>
                     <View style={globalStyles.marker}>
                       <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
                         {index + 1}
@@ -158,10 +157,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 32,
-    gap: 16,
+    gap: 32,
+    justifyContent: 'space-between',
     overflow: 'hidden',
   },
   stationsContainer: {
-    gap: 8,
+    gap: 16,
   },
 });

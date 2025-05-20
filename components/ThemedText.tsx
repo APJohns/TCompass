@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     color: '#0a7ea4',
   },
   small: {
-    lineHeight: 20,
+    lineHeight: 18,
     fontSize: 12,
   },
 });
