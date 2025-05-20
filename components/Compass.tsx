@@ -128,7 +128,7 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
           left: '49%',
           width: '2%',
           height: '2%',
-          backgroundColor: Colors[colorScheme].tint,
+          backgroundColor: Colors[colorScheme].text,
           borderRadius: '50%',
         }}
       />
