@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LocationObject, requestForegroundPermissionsAsync, watchPositionAsync } from 'expo-location';
 import { createContext, useCallback, useEffect, useState } from 'react';
 
 export interface Station {
@@ -34,6 +35,8 @@ const defaultSettings: Settings = {
   },
 };
 
+export const LocationContext = createContext<LocationObject | null>(null);
+
 export const SettingsContext = createContext<[Settings, React.Dispatch<React.SetStateAction<Settings>> | null]>([
   defaultSettings,
   null,
@@ -51,6 +54,8 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  const [location, setLocation] = useState<LocationObject | null>(null);
 
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [allStations, setAllStations] = useState<Station[]>([]);
@@ -113,6 +118,25 @@ export default function RootLayout() {
     setStations(allStations.filter((station) => types.includes(station.attributes.vehicle_type)));
   }, [allStations, settings]);
 
+  useEffect(() => {
+    (async () => {
+      let { status } = await requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permission to access location was denied');
+        return;
+      }
+
+      const locationSubscription = await watchPositionAsync({}, (locationData) => {
+        setLocation(locationData);
+      });
+
+      // Clean up on unmount
+      return () => {
+        locationSubscription.remove();
+      };
+    })();
+  }, []);
+
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
@@ -120,17 +144,19 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <SettingsContext value={[settings, setSettings]}>
-        <StationsContext value={stations}>
-          <TrackedStationsContext value={[trackedStations, setTrackedStations]}>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <StatusBar style="auto" />
-          </TrackedStationsContext>
-        </StationsContext>
-      </SettingsContext>
+      <LocationContext value={location}>
+        <SettingsContext value={[settings, setSettings]}>
+          <StationsContext value={stations}>
+            <TrackedStationsContext value={[trackedStations, setTrackedStations]}>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+              <StatusBar style="auto" />
+            </TrackedStationsContext>
+          </StationsContext>
+        </SettingsContext>
+      </LocationContext>
     </ThemeProvider>
   );
 }

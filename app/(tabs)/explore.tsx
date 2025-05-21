@@ -5,14 +5,16 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import styles from '@/shared/styles';
+import { getDistanceBetweenCoordinates } from '@/shared/utils';
 import { useContext, useEffect, useState } from 'react';
-import { Station, StationsContext, TrackedStationsContext } from '../_layout';
+import { LocationContext, Station, StationsContext, TrackedStationsContext } from '../_layout';
 
 export default function TabTwoScreen() {
   const allStations = useContext(StationsContext);
-  const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
   const colorScheme = useColorScheme() ?? 'light';
+  const location = useContext(LocationContext);
 
+  const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [stations, setStations] = useState<Station[]>([]);
 
@@ -33,9 +35,27 @@ export default function TabTwoScreen() {
       );
       setStations(filteredStations);
     } else {
-      setStations(allStations);
+      const sortedStations = [...allStations];
+      sortedStations.sort((a, b) => {
+        if (!location) return 0;
+        return (
+          getDistanceBetweenCoordinates(
+            location.coords.latitude,
+            location.coords.longitude,
+            a.attributes.latitude,
+            a.attributes.longitude
+          ) -
+          getDistanceBetweenCoordinates(
+            location.coords.latitude,
+            location.coords.longitude,
+            b.attributes.latitude,
+            b.attributes.longitude
+          )
+        );
+      });
+      setStations(sortedStations);
     }
-  }, [allStations, searchQuery]);
+  }, [allStations, location, searchQuery]);
 
   return (
     <ThemedView style={{ flex: 1 }} isSafeArea>

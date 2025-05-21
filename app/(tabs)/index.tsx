@@ -5,14 +5,13 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinates, getDistanceBetweenCoordinatesInMiles } from '@/shared/utils';
-import * as Location from 'expo-location';
+import { requestForegroundPermissionsAsync, watchHeadingAsync } from 'expo-location';
 import { useContext, useEffect, useState } from 'react';
-import { Station, StationsContext, TrackedStationsContext } from '../_layout';
+import { LocationContext, Station, StationsContext, TrackedStationsContext } from '../_layout';
 
 let markerIncrementor = 0;
 
 export default function HomeScreen() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [heading, setHeading] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -21,6 +20,7 @@ export default function HomeScreen() {
   const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
 
   const allStations = useContext(StationsContext);
+  const location = useContext(LocationContext);
 
   const getMarkerDistance = (station: Station) => {
     if (location) {
@@ -73,24 +73,19 @@ export default function HomeScreen() {
 
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      let { status } = await requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
         return;
       }
 
-      const locationSubscription = await Location.watchPositionAsync({}, (locationData) => {
-        setLocation(locationData);
-      });
-
-      const headingSubscription = await Location.watchHeadingAsync((headingData) => {
+      const headingSubscription = await watchHeadingAsync((headingData) => {
         setHeading(headingData.trueHeading);
       });
 
       // Clean up on unmount
       return () => {
         headingSubscription.remove();
-        locationSubscription.remove();
       };
     })();
   }, []);
@@ -102,7 +97,7 @@ export default function HomeScreen() {
           <>
             <Compass heading={heading} location={location} stations={stations} markerNumbers={markerNumbers} />
             <View style={{ flex: 1, gap: 8 }}>
-              <ThemedText type="defaultSemiBold">Nearby stations</ThemedText>
+              <ThemedText type="defaultSemiBold">Nearby stops</ThemedText>
               <View style={styles.stationsContainer}>
                 <FlatList
                   data={stations}
