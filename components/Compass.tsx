@@ -24,11 +24,56 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
       station.attributes.latitude,
       station.attributes.longitude
     );
-    return ((distance < edge ? ((edge - distance) / edge) * 50 : 0) + '%') as DimensionValue;
+    return ((Math.max(edge - distance, edge * -0.2) / edge) * 50 + '%') as DimensionValue;
   };
 
   return (
     <View>
+      {/* Decor */}
+      <View
+        style={{
+          position: 'absolute',
+          inset: 0,
+          justifyContent: 'center',
+        }}
+      >
+        <ThemedText
+          type="small"
+          style={{
+            padding: 4,
+            color: '#aaa',
+          }}
+        >
+          500&apos;
+        </ThemedText>
+      </View>
+      <View
+        style={{
+          position: 'absolute',
+          inset: '25%',
+          borderRadius: '50%',
+          borderWidth: 1,
+          borderColor: '#ddd',
+          justifyContent: 'center',
+        }}
+      >
+        <ThemedText type="small" style={{ color: '#aaa', padding: 4 }}>
+          250&apos;
+        </ThemedText>
+      </View>
+      <View
+        style={{
+          position: 'absolute',
+          top: '49%',
+          left: '49%',
+          width: '2%',
+          height: '2%',
+          backgroundColor: Colors[colorScheme].text,
+          borderRadius: '50%',
+        }}
+      />
+
+      {/* Compass */}
       <View
         style={{
           justifyContent: 'space-between',
@@ -95,43 +140,6 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
           </View>
         ))}
       </View>
-
-      {/* Decor */}
-      <ThemedText
-        type="small"
-        style={{
-          position: 'absolute',
-          top: -12,
-          left: '25%',
-          color: '#aaa',
-        }}
-      >
-        500&apos;
-      </ThemedText>
-      <View
-        style={{
-          position: 'absolute',
-          inset: '25%',
-          borderRadius: '50%',
-          borderWidth: 1,
-          borderColor: '#ddd',
-        }}
-      >
-        <ThemedText type="small" style={{ color: '#aaa' }}>
-          250&apos;
-        </ThemedText>
-      </View>
-      <View
-        style={{
-          position: 'absolute',
-          top: '49%',
-          left: '49%',
-          width: '2%',
-          height: '2%',
-          backgroundColor: Colors[colorScheme].text,
-          borderRadius: '50%',
-        }}
-      />
     </View>
   );
 }
