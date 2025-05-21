@@ -30,7 +30,7 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
   return (
     <View
       style={{
-        padding: '2%',
+        margin: '2%',
       }}
     >
       {/* Decor */}
