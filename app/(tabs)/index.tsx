@@ -31,7 +31,7 @@ export default function HomeScreen() {
         station.attributes.latitude,
         station.attributes.longitude
       );
-      return miles * 5280 <= 1000 ? (miles * 5280).toFixed(0) : miles.toPrecision(2);
+      return miles * 5280 <= 1000 ? (miles * 5280).toFixed(0) + ' ft' : miles.toPrecision(2) + ' mi';
     }
   };
 
@@ -113,7 +113,7 @@ export default function HomeScreen() {
                     </View>
                     <ThemedText style={{ flexShrink: 1 }}>{station.attributes.name}</ThemedText>
                     <ThemedText style={{ marginLeft: 'auto' }} type="small">
-                      {getMarkerDistance(station)} miles
+                      {getMarkerDistance(station)}
                     </ThemedText>
                   </View>
                 ))}
