@@ -27,37 +27,39 @@ export default function SettingsScreen() {
         }}
       >
         <ThemedText type="title">Settings</ThemedText>
-        <View style={styles.switches}>
+        <View style={{ flex: 1, gap: 8 }}>
           <ThemedText type="defaultSemiBold">Location types</ThemedText>
-          <View style={styles.switchRow}>
-            <View style={{ flexShrink: 1, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-              <View style={styles.busMarker}>
-                <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
-                  T
-                </ThemedText>
+          <View style={styles.switches}>
+            <View style={styles.switchRow}>
+              <View style={{ flexShrink: 1, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                <View style={styles.busMarker}>
+                  <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
+                    T
+                  </ThemedText>
+                </View>
+                <ThemedText style={{ flexShrink: 1 }}>Buses</ThemedText>
               </View>
-              <ThemedText style={{ flexShrink: 1 }}>Buses</ThemedText>
+              <Switch
+                style={{ marginLeft: 'auto' }}
+                value={settings.locationTypes.buses}
+                onValueChange={(value) => updateLocationTypes('buses', value)}
+              />
             </View>
-            <Switch
-              style={{ marginLeft: 'auto' }}
-              value={settings.locationTypes.buses}
-              onValueChange={(value) => updateLocationTypes('buses', value)}
-            />
-          </View>
-          <View style={styles.switchRow}>
-            <View style={{ flexShrink: 1, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-              <View style={styles.trainMaker}>
-                <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
-                  T
-                </ThemedText>
+            <View style={styles.switchRow}>
+              <View style={{ flexShrink: 1, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                <View style={styles.trainMaker}>
+                  <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
+                    T
+                  </ThemedText>
+                </View>
+                <ThemedText style={{ flexShrink: 1 }}>Trains</ThemedText>
               </View>
-              <ThemedText style={{ flexShrink: 1 }}>Trains</ThemedText>
+              <Switch
+                style={{ marginLeft: 'auto' }}
+                value={settings.locationTypes.stations}
+                onValueChange={(value) => updateLocationTypes('stations', value)}
+              />
             </View>
-            <Switch
-              style={{ marginLeft: 'auto' }}
-              value={settings.locationTypes.stations}
-              onValueChange={(value) => updateLocationTypes('stations', value)}
-            />
           </View>
         </View>
       </ThemedView>

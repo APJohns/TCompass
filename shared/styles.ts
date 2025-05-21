@@ -31,8 +31,7 @@ export default StyleSheet.create({
   },
   switches: {
     flex: 1,
-    marginTop: 16,
-    gap: 24,
+    gap: 12,
   },
   switchRow: {
     flexDirection: 'row',
