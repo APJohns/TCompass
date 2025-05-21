@@ -40,7 +40,7 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
         <ThemedText
           type="small"
           style={{
-            padding: 4,
+            padding: 8,
             color: '#aaa',
           }}
         >
@@ -57,7 +57,7 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
           justifyContent: 'center',
         }}
       >
-        <ThemedText type="small" style={{ color: '#aaa', padding: 4 }}>
+        <ThemedText type="small" style={{ color: '#aaa', padding: 8 }}>
           250&apos;
         </ThemedText>
       </View>
