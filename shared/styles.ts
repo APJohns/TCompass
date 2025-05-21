@@ -11,4 +11,23 @@ export default StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  content: {
+    flex: 1,
+    padding: 32,
+    justifyContent: 'space-between',
+    gap: 8,
+    overflow: 'hidden',
+    marginBottom: 32,
+  },
+  switches: {
+    flex: 1,
+    marginTop: 16,
+    gap: 24,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
 });
