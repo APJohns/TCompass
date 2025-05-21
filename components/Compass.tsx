@@ -15,16 +15,20 @@ interface Props {
 
 export default function Compass({ heading, location, stations, markerNumbers }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
+  const radius = 0.094697; // 500 ft in miles
+
+  const toPercent = (distance: number) => {
+    return ((distance / radius) * 50 + '%') as DimensionValue;
+  };
 
   const getRadius = (station: Station) => {
-    const edge = 0.094697; // 500 ft in miles
     const distance = getDistanceBetweenCoordinatesInMiles(
       location.coords.latitude,
       location.coords.longitude,
       station.attributes.latitude,
       station.attributes.longitude
     );
-    return ((Math.max(edge - distance, edge * -0.2) / edge) * 50 + '%') as DimensionValue;
+    return toPercent(Math.max(radius - distance, radius * -0.2));
   };
 
   return (
@@ -65,15 +69,33 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
           250&apos;
         </ThemedText>
       </View>
+      {/* Accuracy Ring */}
+      <View
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          borderRadius: '50%',
+          borderWidth: 2,
+          borderColor: 'white',
+          boxSizing: 'content-box',
+          width: toPercent((location.coords.accuracy || 0) / 1609),
+          height: toPercent((location.coords.accuracy || 0) / 1609),
+          transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
+          backgroundColor: Colors[colorScheme].tint,
+          opacity: 0.5,
+        }}
+      />
+      {/* Center point */}
       <View
         style={{
           position: 'absolute',
           top: '49%',
           left: '49%',
+          borderRadius: '50%',
           width: '2%',
           height: '2%',
           backgroundColor: Colors[colorScheme].text,
-          borderRadius: '50%',
         }}
       />
 
