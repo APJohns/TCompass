@@ -1,15 +1,25 @@
 import { StyleSheet } from 'react-native';
 
-export default StyleSheet.create({
+const marker = StyleSheet.create({
   marker: {
     height: 25,
     borderRadius: '50%',
-    backgroundColor: 'white',
     borderColor: 'black',
     borderWidth: 2,
     aspectRatio: '1/1',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+});
+
+export default StyleSheet.create({
+  busMarker: {
+    ...marker.marker,
+    backgroundColor: '#f2ad25',
+  },
+  trainMaker: {
+    ...marker.marker,
+    backgroundColor: 'white',
   },
   content: {
     flex: 1,

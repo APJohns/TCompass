@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 import Compass from '@/components/Compass';
 import { ThemedText } from '@/components/ThemedText';
@@ -7,7 +7,7 @@ import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinates, getDistanceBetweenCoordinatesInMiles } from '@/shared/utils';
 import * as Location from 'expo-location';
 import { useContext, useEffect, useState } from 'react';
-import { AllStationsContext, Station, TrackedStationsContext } from '../_layout';
+import { Station, StationsContext, TrackedStationsContext } from '../_layout';
 
 let markerIncrementor = 0;
 
@@ -18,10 +18,9 @@ export default function HomeScreen() {
 
   const [stations, setStations] = useState<Station[]>([]);
   const [markerNumbers, setMarkerNumbers] = useState<{ [key: string]: number }>({});
-  // const markerNumbers = useRef(new Map<string, number>());
-
-  const allStations = useContext(AllStationsContext);
   const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
+
+  const allStations = useContext(StationsContext);
 
   const getMarkerDistance = (station: Station) => {
     if (location) {
@@ -98,30 +97,39 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={{ flex: 1 }} isSafeArea>
-      <ScrollView>
-        <ThemedView style={styles.content}>
-          {location && heading && stations?.length > 0 && (
-            <>
-              <Compass heading={heading} location={location} stations={stations} markerNumbers={markerNumbers} />
-              <ThemedView style={styles.stationsContainer}>
-                {stations.map((station, index) => (
-                  <View key={station.id} style={{ flexDirection: 'row', gap: 12, alignItems: 'baseline' }}>
-                    <View style={globalStyles.marker}>
-                      <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
-                        {markerNumbers[station.id]}
+      <ThemedView style={styles.content}>
+        {location && heading && stations?.length > 0 && (
+          <>
+            <Compass heading={heading} location={location} stations={stations} markerNumbers={markerNumbers} />
+            <View style={{ flex: 1, gap: 8 }}>
+              <ThemedText type="defaultSemiBold">Nearby stations</ThemedText>
+              <View style={styles.stationsContainer}>
+                <FlatList
+                  data={stations}
+                  renderItem={({ item }) => (
+                    <View
+                      key={item.id}
+                      style={{ paddingVertical: 8, flexDirection: 'row', gap: 12, alignItems: 'baseline' }}
+                    >
+                      <View
+                        style={item.attributes.vehicle_type === 3 ? globalStyles.busMarker : globalStyles.trainMaker}
+                      >
+                        <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
+                          {markerNumbers[item.id]}
+                        </ThemedText>
+                      </View>
+                      <ThemedText style={{ flexShrink: 1 }}>{item.attributes.name}</ThemedText>
+                      <ThemedText style={{ marginLeft: 'auto' }} type="small">
+                        {getMarkerDistance(item)}
                       </ThemedText>
                     </View>
-                    <ThemedText style={{ flexShrink: 1 }}>{station.attributes.name}</ThemedText>
-                    <ThemedText style={{ marginLeft: 'auto' }} type="small">
-                      {getMarkerDistance(station)}
-                    </ThemedText>
-                  </View>
-                ))}
-              </ThemedView>
-            </>
-          )}
-        </ThemedView>
-      </ScrollView>
+                  )}
+                />
+              </View>
+            </View>
+          </>
+        )}
+      </ThemedView>
     </ThemedView>
   );
 }
@@ -131,10 +139,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 32,
     gap: 32,
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     overflow: 'hidden',
   },
   stationsContainer: {
-    gap: 16,
+    flex: 1,
   },
 });

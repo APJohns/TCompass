@@ -6,10 +6,10 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import styles from '@/shared/styles';
 import { useContext, useEffect, useState } from 'react';
-import { AllStationsContext, Station, TrackedStationsContext } from '../_layout';
+import { Station, StationsContext, TrackedStationsContext } from '../_layout';
 
 export default function TabTwoScreen() {
-  const allStations = useContext(AllStationsContext);
+  const allStations = useContext(StationsContext);
   const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
   const colorScheme = useColorScheme() ?? 'light';
 
@@ -77,7 +77,14 @@ export default function TabTwoScreen() {
                 borderBottomColor: Colors[colorScheme].subtle,
               }}
             >
-              <ThemedText style={{ flexShrink: 1 }}>{item.attributes.name}</ThemedText>
+              <View style={{ flexShrink: 1, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                <View style={item.attributes.vehicle_type === 3 ? styles.busMarker : styles.trainMaker}>
+                  <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
+                    T
+                  </ThemedText>
+                </View>
+                <ThemedText style={{ flexShrink: 1 }}>{item.attributes.name}</ThemedText>
+              </View>
               <Switch value={trackedStations.includes(item.id)} onValueChange={() => updateTracked(item)} />
             </View>
           )}

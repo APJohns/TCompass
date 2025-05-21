@@ -16,6 +16,7 @@ export interface Station {
     latitude: number;
     longitude: number;
     distance: number;
+    vehicle_type: number | null;
   };
 }
 
@@ -37,7 +38,7 @@ export const SettingsContext = createContext<[Settings, React.Dispatch<React.Set
   defaultSettings,
   null,
 ]);
-export const AllStationsContext = createContext<Station[]>([]);
+export const StationsContext = createContext<Station[]>([]);
 
 export const TrackedStationsContext = createContext<[string[], React.Dispatch<React.SetStateAction<string[]>> | null]>([
   [],
@@ -45,13 +46,14 @@ export const TrackedStationsContext = createContext<[string[], React.Dispatch<Re
 ]);
 
 export default function RootLayout() {
-  AsyncStorage.clear();
+  // AsyncStorage.clear();
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [allStations, setAllStations] = useState<Station[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [trackedStations, setTrackedStations] = useState<string[]>([]);
 
@@ -62,39 +64,39 @@ export default function RootLayout() {
   }, []);
 
   const fetchStationsFromMBTA = useCallback(async (): Promise<Station[]> => {
-    console.log('fetching stations');
+    console.log('fetching train stops');
     const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=1,2`);
     return (await res.json()).data as Station[];
   }, []);
 
   const refreshStationsData = useCallback(async () => {
     const dataPromises = [];
-    if (settings.locationTypes.stations) dataPromises.push(fetchStationsFromMBTA());
-    if (settings.locationTypes.buses) dataPromises.push(fetchBusStopsFromMBTA());
+    dataPromises.push(fetchStationsFromMBTA());
+    dataPromises.push(fetchBusStopsFromMBTA());
 
     Promise.all(dataPromises).then((data) => {
       const mergedData = data.flat();
       mergedData.sort((a, b) => a.attributes.name.localeCompare(b.attributes.name));
       AsyncStorage.setItem(
-        'stations',
+        'stops',
         JSON.stringify({
           data: mergedData,
           timestamp: new Date().getTime(),
         })
       );
-      setStations(mergedData);
+      setAllStations(mergedData);
     });
-  }, [fetchBusStopsFromMBTA, fetchStationsFromMBTA, settings]);
+  }, [fetchBusStopsFromMBTA, fetchStationsFromMBTA]);
 
   useEffect(() => {
     (async () => {
-      const storedStations = await AsyncStorage.getItem('stations');
+      const storedStations = await AsyncStorage.getItem('stops');
       if (storedStations) {
         const parsedStations = JSON.parse(storedStations);
         // Use cache if it is less than 1 day old
         if (parsedStations.timestamp + 1000 * 60 * 60 * 24 > new Date().getTime()) {
-          console.log('Using cached stations');
-          setStations(parsedStations.data);
+          console.log('Using cached data');
+          setAllStations(parsedStations.data);
         } else {
           refreshStationsData();
         }
@@ -104,6 +106,13 @@ export default function RootLayout() {
     })();
   }, [refreshStationsData]);
 
+  useEffect(() => {
+    let types = [];
+    if (settings.locationTypes.stations) types.push(null, 1, 2);
+    if (settings.locationTypes.buses) types.push(3);
+    setStations(allStations.filter((station) => types.includes(station.attributes.vehicle_type)));
+  }, [allStations, settings]);
+
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
@@ -112,7 +121,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <SettingsContext value={[settings, setSettings]}>
-        <AllStationsContext value={stations}>
+        <StationsContext value={stations}>
           <TrackedStationsContext value={[trackedStations, setTrackedStations]}>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -120,7 +129,7 @@ export default function RootLayout() {
             </Stack>
             <StatusBar style="auto" />
           </TrackedStationsContext>
-        </AllStationsContext>
+        </StationsContext>
       </SettingsContext>
     </ThemeProvider>
   );

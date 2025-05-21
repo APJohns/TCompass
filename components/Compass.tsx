@@ -87,7 +87,7 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
               ],
             }}
           >
-            <View style={globalStyles.marker}>
+            <View style={station.attributes.vehicle_type === 3 ? globalStyles.busMarker : globalStyles.trainMaker}>
               <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
                 {markerNumbers[station.id]}
               </ThemedText>

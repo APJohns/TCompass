@@ -30,15 +30,31 @@ export default function SettingsScreen() {
         <View style={styles.switches}>
           <ThemedText type="defaultSemiBold">Location types</ThemedText>
           <View style={styles.switchRow}>
-            <ThemedText style={{ flexShrink: 1 }}>Bus stops</ThemedText>
+            <View style={{ flexShrink: 1, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+              <View style={styles.busMarker}>
+                <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
+                  T
+                </ThemedText>
+              </View>
+              <ThemedText style={{ flexShrink: 1 }}>Buses</ThemedText>
+            </View>
             <Switch
+              style={{ marginLeft: 'auto' }}
               value={settings.locationTypes.buses}
               onValueChange={(value) => updateLocationTypes('buses', value)}
             />
           </View>
           <View style={styles.switchRow}>
-            <ThemedText style={{ flexShrink: 1 }}>Stations &amp; entrances/exits</ThemedText>
+            <View style={{ flexShrink: 1, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+              <View style={styles.trainMaker}>
+                <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
+                  T
+                </ThemedText>
+              </View>
+              <ThemedText style={{ flexShrink: 1 }}>Trains</ThemedText>
+            </View>
             <Switch
+              style={{ marginLeft: 'auto' }}
               value={settings.locationTypes.stations}
               onValueChange={(value) => updateLocationTypes('stations', value)}
             />
