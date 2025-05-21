@@ -28,7 +28,11 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
   };
 
   return (
-    <View>
+    <View
+      style={{
+        padding: '2%',
+      }}
+    >
       {/* Decor */}
       <View
         style={{
