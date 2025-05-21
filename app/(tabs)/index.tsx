@@ -97,7 +97,7 @@ export default function HomeScreen() {
           <>
             <Compass heading={heading} location={location} stations={stations} markerNumbers={markerNumbers} />
             <View style={{ flex: 1, gap: 8 }}>
-              <ThemedText type="defaultSemiBold">Nearby stops</ThemedText>
+              <ThemedText type="defaultSemiBold">Tracked stops</ThemedText>
               <View style={styles.stationsContainer}>
                 <FlatList
                   data={stations}
