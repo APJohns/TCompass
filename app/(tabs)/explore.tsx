@@ -7,36 +7,36 @@ import { Colors } from '@/constants/Colors';
 import styles from '@/shared/styles';
 import { getDistanceBetweenCoordinates } from '@/shared/utils';
 import { useContext, useEffect, useState } from 'react';
-import { LocationContext, Station, StationsContext, TrackedStationsContext } from '../_layout';
+import { LocationContext, Stop, StopsContext, TrackedStopsContext } from '../_layout';
 
 export default function TabTwoScreen() {
-  const allStations = useContext(StationsContext);
+  const allStops = useContext(StopsContext);
   const colorScheme = useColorScheme() ?? 'light';
   const location = useContext(LocationContext);
 
-  const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
+  const [trackedStops, setTrackedStops] = useContext(TrackedStopsContext);
   const [searchQuery, setSearchQuery] = useState('');
-  const [stations, setStations] = useState<Station[]>([]);
+  const [stops, setStops] = useState<Stop[]>([]);
 
-  const updateTracked = (station: Station) => {
-    if (setTrackedStations) {
-      if (trackedStations.includes(station.id)) {
-        setTrackedStations(trackedStations.filter((id) => id !== station.id));
+  const updateTracked = (stop: Stop) => {
+    if (setTrackedStops) {
+      if (trackedStops.includes(stop.id)) {
+        setTrackedStops(trackedStops.filter((id) => id !== stop.id));
       } else {
-        setTrackedStations([...trackedStations, station.id]);
+        setTrackedStops([...trackedStops, stop.id]);
       }
     }
   };
 
   useEffect(() => {
     if (searchQuery) {
-      const filteredStations = allStations.filter((station) =>
-        station.attributes.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const filteredStops = allStops.filter((stop) =>
+        stop.attributes.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setStations(filteredStations);
+      setStops(filteredStops);
     } else {
-      const sortedStations = [...allStations];
-      sortedStations.sort((a, b) => {
+      const sortedStops = [...allStops];
+      sortedStops.sort((a, b) => {
         if (!location) return 0;
         return (
           getDistanceBetweenCoordinates(
@@ -53,9 +53,9 @@ export default function TabTwoScreen() {
           )
         );
       });
-      setStations(sortedStations);
+      setStops(sortedStops);
     }
-  }, [allStations, location, searchQuery]);
+  }, [allStops, location, searchQuery]);
 
   return (
     <ThemedView style={{ flex: 1 }} isSafeArea>
@@ -86,7 +86,7 @@ export default function TabTwoScreen() {
           />
         </ThemedView>
         <FlatList
-          data={stations}
+          data={stops}
           renderItem={({ item }) => (
             <View
               key={item.id}
@@ -105,7 +105,7 @@ export default function TabTwoScreen() {
                 </View>
                 <ThemedText style={{ flexShrink: 1 }}>{item.attributes.name}</ThemedText>
               </View>
-              <Switch value={trackedStations.includes(item.id)} onValueChange={() => updateTracked(item)} />
+              <Switch value={trackedStops.includes(item.id)} onValueChange={() => updateTracked(item)} />
             </View>
           )}
         />

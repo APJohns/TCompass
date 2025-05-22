@@ -1,19 +1,19 @@
 {
   "expo": {
-    "name": "station-compass",
-    "slug": "station-compass",
+    "name": "stop-compass",
+    "slug": "stop-compass",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "stationcompass",
+    "scheme": "stopcompass",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Allow Expo experiences to use your location"
+        "NSLocationWhenInUseUsageDescription": "Allow stop compass to use your location"
       },
-      "bundleIdentifier": "com.anonymous.stationcompass"
+      "bundleIdentifier": "com.anonymous.stopcompass"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +21,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.stationcompass"
+      "package": "com.anonymous.stopcompass"
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +42,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow station compass to use your location."
+          "locationWhenInUsePermission": "Allow stop compass to use your location."
         }
       ]
     ],

@@ -1,5 +1,4 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
@@ -10,7 +9,7 @@ import { LocationObject, requestForegroundPermissionsAsync, watchPositionAsync }
 import { createContext, useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
-export interface Station {
+export interface Stop {
   id: string;
   type: string;
   attributes: {
@@ -25,14 +24,14 @@ export interface Station {
 interface Settings {
   locationTypes: {
     buses: boolean;
-    stations: boolean;
+    stops: boolean;
   };
 }
 
 const defaultSettings: Settings = {
   locationTypes: {
     buses: false,
-    stations: true,
+    stops: true,
   },
 };
 
@@ -42,9 +41,9 @@ export const SettingsContext = createContext<[Settings, React.Dispatch<React.Set
   defaultSettings,
   null,
 ]);
-export const StationsContext = createContext<Station[]>([]);
+export const StopsContext = createContext<Stop[]>([]);
 
-export const TrackedStationsContext = createContext<[string[], React.Dispatch<React.SetStateAction<string[]>> | null]>([
+export const TrackedStopsContext = createContext<[string[], React.Dispatch<React.SetStateAction<string[]>> | null]>([
   [],
   null,
 ]);
@@ -52,32 +51,29 @@ export const TrackedStationsContext = createContext<[string[], React.Dispatch<Re
 export default function RootLayout() {
   // AsyncStorage.clear();
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
 
   const [location, setLocation] = useState<LocationObject | null>(null);
 
   const [settings, setSettings] = useState<Settings>(defaultSettings);
-  const [allStations, setAllStations] = useState<Station[]>([]);
-  const [stations, setStations] = useState<Station[]>([]);
-  const [trackedStations, setTrackedStations] = useState<string[]>([]);
+  const [allStops, setAllStops] = useState<Stop[]>([]);
+  const [stops, setStops] = useState<Stop[]>([]);
+  const [trackedStops, setTrackedStops] = useState<string[]>([]);
 
-  const fetchBusStopsFromMBTA = useCallback(async (): Promise<Station[]> => {
+  const fetchBusStopsFromMBTA = useCallback(async (): Promise<Stop[]> => {
     console.log('fetching bus stops');
     const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=0&filter[route_type]=3`);
-    return (await res.json()).data as Station[];
+    return (await res.json()).data as Stop[];
   }, []);
 
-  const fetchStationsFromMBTA = useCallback(async (): Promise<Station[]> => {
+  const fetchStopsFromMBTA = useCallback(async (): Promise<Stop[]> => {
     console.log('fetching train stops');
     const res = await fetch(`https://api-v3.mbta.com/stops?filter[location_type]=1,2`);
-    return (await res.json()).data as Station[];
+    return (await res.json()).data as Stop[];
   }, []);
 
-  const refreshStationsData = useCallback(async () => {
+  const refreshStopsData = useCallback(async () => {
     const dataPromises = [];
-    dataPromises.push(fetchStationsFromMBTA());
+    dataPromises.push(fetchStopsFromMBTA());
     dataPromises.push(fetchBusStopsFromMBTA());
 
     Promise.all(dataPromises).then((data) => {
@@ -90,38 +86,38 @@ export default function RootLayout() {
           timestamp: new Date().getTime(),
         })
       );
-      setAllStations(mergedData);
+      setAllStops(mergedData);
     });
-  }, [fetchBusStopsFromMBTA, fetchStationsFromMBTA]);
+  }, [fetchBusStopsFromMBTA, fetchStopsFromMBTA]);
 
   useEffect(() => {
     (async () => {
       if (Platform.OS === 'android') {
-        refreshStationsData();
+        refreshStopsData();
         return;
       }
-      const storedStations = await AsyncStorage.getItem('stops');
-      if (storedStations) {
-        const parsedStations = JSON.parse(storedStations);
+      const storedStops = await AsyncStorage.getItem('stops');
+      if (storedStops) {
+        const parsedStops = JSON.parse(storedStops);
         // Use cache if it is less than 1 day old
-        if (parsedStations.timestamp + 1000 * 60 * 60 * 24 > new Date().getTime()) {
+        if (parsedStops.timestamp + 1000 * 60 * 60 * 24 > new Date().getTime()) {
           console.log('Using cached data');
-          setAllStations(parsedStations.data);
+          setAllStops(parsedStops.data);
         } else {
-          refreshStationsData();
+          refreshStopsData();
         }
       } else {
-        refreshStationsData();
+        refreshStopsData();
       }
     })();
-  }, [refreshStationsData]);
+  }, [refreshStopsData]);
 
   useEffect(() => {
     let types = [];
-    if (settings.locationTypes.stations) types.push(null, 1, 2);
+    if (settings.locationTypes.stops) types.push(null, 1, 2);
     if (settings.locationTypes.buses) types.push(3);
-    setStations(allStations.filter((station) => types.includes(station.attributes.vehicle_type)));
-  }, [allStations, settings]);
+    setStops(allStops.filter((stop) => types.includes(stop.attributes.vehicle_type)));
+  }, [allStops, settings]);
 
   useEffect(() => {
     (async () => {
@@ -142,24 +138,19 @@ export default function RootLayout() {
     })();
   }, []);
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <LocationContext value={location}>
         <SettingsContext value={[settings, setSettings]}>
-          <StationsContext value={stations}>
-            <TrackedStationsContext value={[trackedStations, setTrackedStations]}>
+          <StopsContext value={stops}>
+            <TrackedStopsContext value={[trackedStops, setTrackedStops]}>
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="+not-found" />
               </Stack>
               <StatusBar style="auto" />
-            </TrackedStationsContext>
-          </StationsContext>
+            </TrackedStopsContext>
+          </StopsContext>
         </SettingsContext>
       </LocationContext>
     </ThemeProvider>

@@ -1,4 +1,4 @@
-import { Station } from '@/app/_layout';
+import { Stop } from '@/app/_layout';
 import { Colors } from '@/constants/Colors';
 import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinatesInMiles, getHeadingBetweenCoordinates } from '@/shared/utils';
@@ -10,11 +10,11 @@ import { ThemedText } from './ThemedText';
 interface Props {
   heading: number;
   location: LocationObject;
-  stations: Station[];
+  stops: Stop[];
   markerNumbers: { [key: string]: number };
 }
 
-export default function Compass({ heading, location, stations, markerNumbers }: Props) {
+export default function Compass({ heading, location, stops, markerNumbers }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
   const radius = 0.094697; // 500 ft in miles
 
@@ -24,12 +24,12 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
     return (distance / radius) * 50;
   };
 
-  const getRadius = (station: Station) => {
+  const getRadius = (stop: Stop) => {
     const distance = getDistanceBetweenCoordinatesInMiles(
       location.coords.latitude,
       location.coords.longitude,
-      station.attributes.latitude,
-      station.attributes.longitude
+      stop.attributes.latitude,
+      stop.attributes.longitude
     );
     return (toPercent(Math.max(radius - distance, radius * -0.2)) + '%') as DimensionValue;
   };
@@ -136,26 +136,26 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
           <ThemedText style={styles.cardinalLetter}>E</ThemedText>
         </View>
         <ThemedText style={styles.cardinalLetter}>S</ThemedText>
-        {stations.map((station) => (
+        {stops.map((stop) => (
           <View
-            key={station.id}
+            key={stop.id}
             style={{
               position: 'absolute',
-              inset: getRadius(station),
+              inset: getRadius(stop),
               alignItems: 'center',
               transform: [
                 {
                   rotate: `${getHeadingBetweenCoordinates(
                     location?.coords.latitude,
                     location?.coords.longitude,
-                    station?.attributes.latitude,
-                    station?.attributes.longitude
+                    stop?.attributes.latitude,
+                    stop?.attributes.longitude
                   )}deg`,
                 },
               ],
             }}
           >
-            <View style={station.attributes.vehicle_type === 3 ? globalStyles.busMarker : globalStyles.trainMaker}>
+            <View style={stop.attributes.vehicle_type === 3 ? globalStyles.busMarker : globalStyles.trainMaker}>
               <ThemedText
                 type="small"
                 style={{
@@ -168,15 +168,15 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
                         getHeadingBetweenCoordinates(
                           location?.coords.latitude,
                           location?.coords.longitude,
-                          station?.attributes.latitude,
-                          station?.attributes.longitude
+                          stop?.attributes.latitude,
+                          stop?.attributes.longitude
                         ) +
                         'deg',
                     },
                   ],
                 }}
               >
-                {markerNumbers[station.id]}
+                {markerNumbers[stop.id]}
               </ThemedText>
             </View>
           </View>

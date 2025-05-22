@@ -7,7 +7,7 @@ import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinates, getDistanceBetweenCoordinatesInMiles } from '@/shared/utils';
 import { requestForegroundPermissionsAsync, watchHeadingAsync } from 'expo-location';
 import { useContext, useEffect, useState } from 'react';
-import { LocationContext, Station, StationsContext, TrackedStationsContext } from '../_layout';
+import { LocationContext, Stop, StopsContext, TrackedStopsContext } from '../_layout';
 
 let markerIncrementor = 0;
 
@@ -15,40 +15,40 @@ export default function HomeScreen() {
   const [heading, setHeading] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const [stations, setStations] = useState<Station[]>([]);
+  const [stops, setStops] = useState<Stop[]>([]);
   const [markerNumbers, setMarkerNumbers] = useState<{ [key: string]: number }>({});
-  const [trackedStations, setTrackedStations] = useContext(TrackedStationsContext);
+  const [trackedStops, setTrackedStops] = useContext(TrackedStopsContext);
 
-  const allStations = useContext(StationsContext);
+  const allStops = useContext(StopsContext);
   const location = useContext(LocationContext);
 
-  const getMarkerDistance = (station: Station) => {
+  const getMarkerDistance = (stop: Stop) => {
     if (location) {
       const miles = getDistanceBetweenCoordinatesInMiles(
         location.coords.latitude,
         location.coords.longitude,
-        station.attributes.latitude,
-        station.attributes.longitude
+        stop.attributes.latitude,
+        stop.attributes.longitude
       );
       return miles * 5280 <= 1000 ? (miles * 5280).toFixed(0) + ' ft' : miles.toPrecision(2) + ' mi';
     }
   };
 
   useEffect(() => {
-    stations.forEach((station) => {
-      if (!markerNumbers[station.id]) {
+    stops.forEach((stop) => {
+      if (!markerNumbers[stop.id]) {
         setMarkerNumbers((prev) => ({
           ...prev,
-          [station.id]: ++markerIncrementor,
+          [stop.id]: ++markerIncrementor,
         }));
       }
     });
-  }, [markerNumbers, stations]);
+  }, [markerNumbers, stops]);
 
   useEffect(() => {
-    if (location && allStations.length > 0) {
-      if (trackedStations.length === 0) {
-        const sortedStations = [...allStations].sort(
+    if (location && allStops.length > 0) {
+      if (trackedStops.length === 0) {
+        const sortedStops = [...allStops].sort(
           (a, b) =>
             getDistanceBetweenCoordinates(
               location.coords.latitude,
@@ -63,13 +63,13 @@ export default function HomeScreen() {
               b.attributes.longitude
             )
         );
-        const closest = sortedStations.slice(0, 5);
-        setStations(closest);
+        const closest = sortedStops.slice(0, 5);
+        setStops(closest);
       } else {
-        setStations(allStations.filter((station) => trackedStations.includes(station.id)));
+        setStops(allStops.filter((stop) => trackedStops.includes(stop.id)));
       }
     }
-  }, [allStations, location, trackedStations]);
+  }, [allStops, location, trackedStops]);
 
   useEffect(() => {
     (async () => {
@@ -93,14 +93,14 @@ export default function HomeScreen() {
   return (
     <ThemedView style={{ flex: 1 }} isSafeArea>
       <ThemedView style={styles.content}>
-        {location && heading !== null && stations?.length > 0 ? (
+        {location && heading !== null && stops?.length > 0 ? (
           <>
-            <Compass heading={heading} location={location} stations={stations} markerNumbers={markerNumbers} />
+            <Compass heading={heading} location={location} stops={stops} markerNumbers={markerNumbers} />
             <View style={{ flex: 1, gap: 8 }}>
               <ThemedText type="defaultSemiBold">Tracked stops</ThemedText>
-              <View style={styles.stationsContainer}>
+              <View style={styles.stopsContainer}>
                 <FlatList
-                  data={stations}
+                  data={stops}
                   renderItem={({ item }) => (
                     <View
                       key={item.id}
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     overflow: 'hidden',
   },
-  stationsContainer: {
+  stopsContainer: {
     flex: 1,
   },
 });

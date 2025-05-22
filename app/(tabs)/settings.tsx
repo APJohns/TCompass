@@ -7,7 +7,7 @@ import { SettingsContext } from '../_layout';
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useContext(SettingsContext);
-  const updateLocationTypes = (type: 'buses' | 'stations' | 'entrances', value: boolean) => {
+  const updateLocationTypes = (type: 'buses' | 'stops' | 'entrances', value: boolean) => {
     if (setSettings) {
       setSettings((prev) => ({
         ...prev,
@@ -56,8 +56,8 @@ export default function SettingsScreen() {
               </View>
               <Switch
                 style={{ marginLeft: 'auto' }}
-                value={settings.locationTypes.stations}
-                onValueChange={(value) => updateLocationTypes('stations', value)}
+                value={settings.locationTypes.stops}
+                onValueChange={(value) => updateLocationTypes('stops', value)}
               />
             </View>
           </View>
