@@ -93,7 +93,7 @@ export default function HomeScreen() {
   return (
     <ThemedView style={{ flex: 1 }} isSafeArea>
       <ThemedView style={styles.content}>
-        {location && heading && stations?.length > 0 && (
+        {location && heading !== null && stations?.length > 0 ? (
           <>
             <Compass heading={heading} location={location} stations={stations} markerNumbers={markerNumbers} />
             <View style={{ flex: 1, gap: 8 }}>
@@ -123,7 +123,7 @@ export default function HomeScreen() {
               </View>
             </View>
           </>
-        )}
+        ) : null}
       </ThemedView>
     </ThemedView>
   );

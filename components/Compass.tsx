@@ -4,7 +4,7 @@ import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinatesInMiles, getHeadingBetweenCoordinates } from '@/shared/utils';
 import { LocationObject } from 'expo-location';
 import { useEffect, useState } from 'react';
-import { Animated, DimensionValue, StyleSheet, useColorScheme, View } from 'react-native';
+import { DimensionValue, StyleSheet, useColorScheme, View } from 'react-native';
 import { ThemedText } from './ThemedText';
 
 interface Props {
@@ -78,7 +78,7 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
         </ThemedText>
       </View>
       {/* Accuracy Ring */}
-      <Animated.View
+      <View
         style={{
           position: 'absolute',
           top: '50%',

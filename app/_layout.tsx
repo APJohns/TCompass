@@ -8,6 +8,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LocationObject, requestForegroundPermissionsAsync, watchPositionAsync } from 'expo-location';
 import { createContext, useCallback, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 
 export interface Station {
   id: string;
@@ -95,6 +96,10 @@ export default function RootLayout() {
 
   useEffect(() => {
     (async () => {
+      if (Platform.OS === 'android') {
+        refreshStationsData();
+        return;
+      }
       const storedStations = await AsyncStorage.getItem('stops');
       if (storedStations) {
         const parsedStations = JSON.parse(storedStations);
