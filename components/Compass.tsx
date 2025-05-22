@@ -3,7 +3,8 @@ import { Colors } from '@/constants/Colors';
 import globalStyles from '@/shared/styles';
 import { getDistanceBetweenCoordinatesInMiles, getHeadingBetweenCoordinates } from '@/shared/utils';
 import { LocationObject } from 'expo-location';
-import { DimensionValue, StyleSheet, useColorScheme, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, DimensionValue, StyleSheet, useColorScheme, View } from 'react-native';
 import { ThemedText } from './ThemedText';
 
 interface Props {
@@ -17,8 +18,10 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
   const colorScheme = useColorScheme() ?? 'light';
   const radius = 0.094697; // 500 ft in miles
 
+  const [pointSize, setPointSize] = useState(3);
+
   const toPercent = (distance: number) => {
-    return ((distance / radius) * 50 + '%') as DimensionValue;
+    return (distance / radius) * 50;
   };
 
   const getRadius = (station: Station) => {
@@ -28,8 +31,13 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
       station.attributes.latitude,
       station.attributes.longitude
     );
-    return toPercent(Math.max(radius - distance, radius * -0.2));
+    return (toPercent(Math.max(radius - distance, radius * -0.2)) + '%') as DimensionValue;
   };
+
+  useEffect(() => {
+    const percent = toPercent((location.coords.accuracy || 0) / 1609);
+    setPointSize(percent < 6 ? 3 : percent);
+  }, [location.coords.accuracy]);
 
   return (
     <View
@@ -70,32 +78,21 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
         </ThemedText>
       </View>
       {/* Accuracy Ring */}
-      <View
+      <Animated.View
         style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
+          overflow: 'hidden',
           borderRadius: '50%',
           borderWidth: 2,
           borderColor: 'white',
           boxSizing: 'content-box',
-          width: toPercent((location.coords.accuracy || 0) / 1609),
-          height: toPercent((location.coords.accuracy || 0) / 1609),
+          width: (pointSize + '%') as DimensionValue,
+          height: (pointSize + '%') as DimensionValue,
           transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
           backgroundColor: Colors[colorScheme].tint,
-          opacity: 0.5,
-        }}
-      />
-      {/* Center point */}
-      <View
-        style={{
-          position: 'absolute',
-          top: '49%',
-          left: '49%',
-          borderRadius: '50%',
-          width: '2%',
-          height: '2%',
-          backgroundColor: Colors[colorScheme].text,
+          opacity: toPercent((location.coords.accuracy || 0) / 1609) < 6 ? 1 : 0.25,
         }}
       />
 
@@ -159,7 +156,26 @@ export default function Compass({ heading, location, stations, markerNumbers }: 
             }}
           >
             <View style={station.attributes.vehicle_type === 3 ? globalStyles.busMarker : globalStyles.trainMaker}>
-              <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
+              <ThemedText
+                type="small"
+                style={{
+                  fontWeight: 'bold',
+                  color: 'black',
+                  transform: [
+                    {
+                      rotate:
+                        heading -
+                        getHeadingBetweenCoordinates(
+                          location?.coords.latitude,
+                          location?.coords.longitude,
+                          station?.attributes.latitude,
+                          station?.attributes.longitude
+                        ) +
+                        'deg',
+                    },
+                  ],
+                }}
+              >
                 {markerNumbers[station.id]}
               </ThemedText>
             </View>
