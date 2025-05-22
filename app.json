@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "stop-compass",
-    "slug": "stop-compass",
+    "name": "TCompass",
+    "slug": "TCompass",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
