@@ -1,17 +1,17 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import Compass from '@/components/Compass';
+import MarkerList from '@/components/MarkerList';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import globalStyles from '@/shared/styles';
-import { getDistanceBetweenCoordinates, getDistanceBetweenCoordinatesInMiles } from '@/shared/utils';
+import { getDistanceBetweenCoordinates } from '@/shared/utils';
 import { requestForegroundPermissionsAsync, watchHeadingAsync } from 'expo-location';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { LocationContext, Stop, StopsContext, TrackedStopsContext } from '../_layout';
 
-let markerIncrementor = 0;
-
 export default function HomeScreen() {
+  const markerIncrementor = useRef(1);
+
   const [heading, setHeading] = useState<number | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -22,24 +22,12 @@ export default function HomeScreen() {
   const allStops = useContext(StopsContext);
   const location = useContext(LocationContext);
 
-  const getMarkerDistance = (stop: Stop) => {
-    if (location) {
-      const miles = getDistanceBetweenCoordinatesInMiles(
-        location.coords.latitude,
-        location.coords.longitude,
-        stop.attributes.latitude,
-        stop.attributes.longitude
-      );
-      return miles * 5280 <= 1000 ? (miles * 5280).toFixed(0) + ' ft' : miles.toPrecision(2) + ' mi';
-    }
-  };
-
   useEffect(() => {
     stops.forEach((stop) => {
       if (!markerNumbers[stop.id]) {
         setMarkerNumbers((prev) => ({
           ...prev,
-          [stop.id]: ++markerIncrementor,
+          [stop.id]: markerIncrementor.current++,
         }));
       }
     });
@@ -99,27 +87,7 @@ export default function HomeScreen() {
             <View style={{ flex: 1, gap: 8 }}>
               <ThemedText type="defaultSemiBold">Tracked stops</ThemedText>
               <View style={styles.stopsContainer}>
-                <FlatList
-                  data={stops}
-                  renderItem={({ item }) => (
-                    <View
-                      key={item.id}
-                      style={{ paddingVertical: 8, flexDirection: 'row', gap: 12, alignItems: 'baseline' }}
-                    >
-                      <View
-                        style={item.attributes.vehicle_type === 3 ? globalStyles.busMarker : globalStyles.trainMaker}
-                      >
-                        <ThemedText type="small" style={{ fontWeight: 'bold', color: 'black' }}>
-                          {markerNumbers[item.id]}
-                        </ThemedText>
-                      </View>
-                      <ThemedText style={{ flexShrink: 1 }}>{item.attributes.name}</ThemedText>
-                      <ThemedText style={{ marginLeft: 'auto' }} type="small">
-                        {getMarkerDistance(item)}
-                      </ThemedText>
-                    </View>
-                  )}
-                />
+                <MarkerList stops={stops} markerNumbers={markerNumbers} />
               </View>
             </View>
           </>
